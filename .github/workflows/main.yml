@@ -11,18 +11,31 @@ permissions:
   id-token: write
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Setup Node.js
+
+    - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
         node-version: 16
+
     - run: npm install
+
     - run: npm run build
-    - name: Upload to GitHub Pages
+
+    - name: Upload artifact for GitHub Pages
+      uses: actions/upload-artifact@v4
+      with:
+        name: github-pages
+        path: ./dist # Eller vilken katalog som din build output finns i
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to GitHub Pages
       uses: actions/deploy-pages@v4
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./dist
+        artifact_name: github-pages
